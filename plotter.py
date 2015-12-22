@@ -1,5 +1,5 @@
 import json
-from CarCrawler import Car
+import car
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -58,12 +58,14 @@ filtered_cars = filter(lambda x: search(search_terms, x.title), cars)
 print str(len(filtered_cars)) + " cars found."
 
 fig = plt.figure()
+
 ax = fig.add_subplot(111)
 ax.scatter([car.mileage for car in filtered_cars], [car.price for car in filtered_cars])
-cid = fig.canvas.mpl_connect('button_release_event', lambda x: onclick(x, filtered_cars))
 ax.grid()
 
 ax.set_xlabel('Mileage')
 ax.set_ylabel('Price')
+
+cid = fig.canvas.mpl_connect('button_release_event', lambda x: onclick(x, filtered_cars))
 
 plt.show()
