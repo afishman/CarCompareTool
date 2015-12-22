@@ -4,23 +4,23 @@ import ssl
 import re
 import json
 
-import crawler
-import car
-
-host_url = "https://www.gumtree.com/"
+from crawler import Crawler
+from car import Car
 
 class GumtreeCrawler(Crawler):
-    def crawl(location, search_radius):
-        #TODO: maybe use the simpler url pattern used to get the rest of the links
-        search_page_url = host_url + "search?q=&search_category=cars&search_location=" + str(location) + "&tl=&distance=" + str(search_radius)
+    host_url = "https://www.gumtree.com/"
 
-        search_page_html = get_html(search_page_url)
+    def crawl(self, location, search_radius):
+        #TODO: maybe use the simpler url pattern used to get the rest of the links
+        search_page_url = self.host_url + "search?q=&search_category=cars&search_location=" + str(location) + "&tl=&distance=" + str(search_radius)
+
+        search_page_html = self.get_html(search_page_url)
 
         #search_page_html = open("testpage.html", 'r').read()
 
         soup = BeautifulSoup(search_page_html, 'html.parser')
 
-        cars = get_cars(soup)
+        cars = self.get_cars(soup)
 
         #get the number of pages
         total_page_number_element = soup.find("li", {"class": "page-last hide-fully-to-l"})
@@ -32,29 +32,29 @@ class GumtreeCrawler(Crawler):
 
             print "Crawling page " + str(current_page) + " of " + str(number_of_pages) 
 
-            url = host_url + "cars/" + location + "/page" + str(current_page) + "?distance=" + str(search_radius)
+            url = self.host_url + "cars/" + location + "/page" + str(current_page) + "?distance=" + str(search_radius)
 
-            html = get_html(url)
+            html = self.get_html(url)
             soup = BeautifulSoup(html, 'html.parser')
-            cars.extend(get_cars(soup))
+            cars.extend(self.get_cars(soup))
             
         return cars
 
 
-    def get_links(soup):
+    def get_links(self, soup):
         listing_links = soup.findAll("a", {"class": "listing-link"})
         listing_links = filter(lambda x: x['href'] != "", listing_links)
 
         return [link['href'] for link in listing_links]
 
-    def get_cars(soup):
+    def get_cars(self, soup):
         cars = []
 
         listing_links = soup.findAll("a", {"class": "listing-link"})
         listing_links = filter(lambda x: x['href'] != "", listing_links)
 
         for listing_link in listing_links:
-            url = host_url + listing_link['href']
+            url = self.host_url + listing_link['href']
             title = listing_link.find("h2", {"class":"listing-title", "itemprop":"name"}).text
             description = listing_link.find("p", {"itemprop": "description"}).text
             year = int(listing_link.find("span", {"itemprop": "releaseDate"}).text)
@@ -85,7 +85,7 @@ if __name__ == "__main__":
     #can be 0, 1, 3, 5, 10, 15, 30, 50, 75, 100, 1000
     search_radius = 10
 
-    cars = crawl(location, search_radius)
+    cars = GumtreeCrawler().crawl(location, search_radius)
 
     with open('GumtreeCars.json', 'w') as outfile:
         json.dump([car.__dict__ for car in cars], outfile, indent=4)
