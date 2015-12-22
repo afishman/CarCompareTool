@@ -15,22 +15,29 @@ class AutoTraderCrawler(Crawler):
         self.search_radius = search_radius
 
     def crawl(self):
-        first_page_html = self.search_page_html(1)
+        cars = []
 
+        first_page_html = self.search_page_html(1)
         soup = BeautifulSoup(first_page_html, 'html.parser')
 
         page_counter_text = soup.find("li", {"class": "paginationMini__count"}).text
         total_pages = int(re.search(r"Page \d+ of (\d+)", page_counter_text).group(1))
 
-        #for i in range(total_pages - 1)
+        cars.extend(self.get_cars(soup))
 
-        print self.get_cars(soup)
+        for i in range(total_pages - 1):
+            page_number = i+2
+            print "AutoTrader page " + str(page_number) + " of " + str(total_pages)
+            soup = BeautifulSoup(self.search_page_html(page_number), 'html.parser')
+            cars.extend(self.get_cars(soup))
 
-        return "carrrrs"
+        return cars
 
 
     def search_page_html(self, page_number):
         url = "search/used/cars/postcode/" + self.location + "/radius/" + str(self.search_radius) + "/sort/default/maximum-mileage/up_to_" + str(self.max_mileage) + "_miles/price-to/" + str(self.max_price) +"/page/" + str(page_number) + r"/onesearchad/used%2Cnearlynew%2Cnew"
+        
+        print url
         return self.get_html(self.host_url + url)
 
     def get_cars(self, soup):
@@ -43,12 +50,26 @@ class AutoTraderCrawler(Crawler):
 
             car_attributes = search_result.find("ul", {"class": "search-result__attributes"}).findAll("li")
 
-            year = int(re.search(r"(\d+) \(\d+", car_attributes[0].text).group(1))
+            #TODO: don't ignore this written-off warning!
+            cat_d_warning_message = "At some point this vehicle was damaged and written off by the insurer because it was uneconomical to repair."
+            if cat_d_warning_message in car_attributes[0].text:
+                car_attributes.pop(0)
+
+            print "----------"
+            print car_attributes[0].text
+            print "----------"
+
+
+
+            year = int(re.search(r"(\d+) \(.+", car_attributes[0].text).group(1))
             car_type = car_attributes[1].text
             mileage = int(re.search(r"((?:\d+)?,?\d+)", car_attributes[2].text).group(1).replace(',',''))
             transmission = car_attributes[3].text
+
             engine_size = car_attributes[4].text
-            fuel_type = car_attributes[5].text
+
+            #TODO: is it always electric when there < 6 attributes?
+            fuel_type = car_attributes[5].text if len(car_attributes) >= 6 else "Electric??"
 
             description = search_result.find("p", {"class": "search-result__description"}).text
 
@@ -68,4 +89,4 @@ class AutoTraderCrawler(Crawler):
         return cars
 
 if __name__=="__main__":
-    AutoTraderCrawler("N33JB", 1).crawl()
+    print AutoTraderCrawler("N33JB", 1).crawl()
