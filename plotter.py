@@ -1,12 +1,13 @@
 import json
-import car
+import webbrowser
 
 import numpy as np
 import matplotlib.pyplot as plt
 
-import webbrowser
+from car import Car
 
 search_terms = ["accord"]
+filename = "cars.json"
 
 def onclick(event, cars):
     #Find the car closest (xdata, ydata)
@@ -38,34 +39,35 @@ def search(terms, string):
 
     return False
 
+if __name__ == "__main__":
+    parsed_json = json.loads(open(filename, 'r').read())
 
+    cars=[]
+    for car in parsed_json:
+        cars.append(Car(url=car['url'], 
+            title=car['title'], 
+            description=car['description'], 
+            model=car['model'], 
+            year=car['year'], 
+            mileage=car['mileage'], 
+            fuel_type=car['fuel_type'], 
+            price=car['price']))
 
-parsed_json = json.loads(open("GumtreeCars.json", 'r').read())
+    filtered_cars = filter(lambda x: search(search_terms, x.title), cars)
+    
+    cars_found_message = str(len(filtered_cars)) + " cars found (" + str(len(cars)) + " total)"
+    
+    fig = plt.figure()
+    
+    ax = fig.add_subplot(111)
+    ax.scatter([car.mileage for car in filtered_cars], [car.price for car in filtered_cars])
+    ax.grid()
+    
+    ax.set_xlabel('Mileage')
+    ax.set_ylabel('Price')
+    search_terms_message = 'Search Terms: ' + ', '.join(search_terms)
+    ax.set_title(search_terms_message + ' | ' + cars_found_message)
 
-cars=[]
-for car in parsed_json:
-    cars.append(Car(url=car['url'], 
-        title=car['title'], 
-        description=car['description'], 
-        model=car['model'], 
-        year=car['year'], 
-        mileage=car['mileage'], 
-        fuel_type=car['fuel_type'], 
-        price=car['price']))
-
-filtered_cars = filter(lambda x: search(search_terms, x.title), cars)
-
-print str(len(filtered_cars)) + " cars found."
-
-fig = plt.figure()
-
-ax = fig.add_subplot(111)
-ax.scatter([car.mileage for car in filtered_cars], [car.price for car in filtered_cars])
-ax.grid()
-
-ax.set_xlabel('Mileage')
-ax.set_ylabel('Price')
-
-cid = fig.canvas.mpl_connect('button_release_event', lambda x: onclick(x, filtered_cars))
-
-plt.show()
+    cid = fig.canvas.mpl_connect('button_release_event', lambda x: onclick(x, filtered_cars))
+    
+    plt.show()

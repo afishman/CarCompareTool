@@ -35,10 +35,8 @@ class AutoTraderCrawler(Crawler):
 
 
     def search_page_html(self, page_number):
-        url = "search/used/cars/postcode/" + self.location + "/radius/" + str(self.search_radius) + "/sort/default/maximum-mileage/up_to_" + str(self.max_mileage) + "_miles/price-to/" + str(self.max_price) +"/page/" + str(page_number) + r"/onesearchad/used%2Cnearlynew%2Cnew"
-        
-        print url
-        return self.get_html(self.host_url + url)
+        url = self.host_url + "search/used/cars/postcode/" + self.location + "/radius/" + str(self.search_radius) + "/sort/default/maximum-mileage/up_to_" + str(self.max_mileage) + "_miles/price-to/" + str(self.max_price) +"/page/" + str(page_number) + r"/onesearchad/used%2Cnearlynew%2Cnew"
+        return self.get_html(url)
 
     def get_cars(self, soup):
         cars = []
@@ -63,7 +61,12 @@ class AutoTraderCrawler(Crawler):
             if cat_d_warning_message in car_attributes[0].text:
                 car_attributes.pop(0)
 
-            year = int(re.search(r"(\d+).+", car_attributes[0].text).group(1))
+            year_expression = re.search(r"(\d+).+", car_attributes[0].text)
+            if year_expression:
+                year = int(year_expression.group(1))
+            else:
+                #Don't know the bleedin' year of the car? Sod off...
+                continue
 
             car_type = car_attributes[1].text
             mileage = int(re.search(r"((?:\d+)?,?\d+)", car_attributes[2].text).group(1).replace(',',''))

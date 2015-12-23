@@ -3,6 +3,7 @@ from abc import ABCMeta, abstractmethod
 import ssl
 
 class Crawler:
+    __metaclass__ = ABCMeta
 
     def get_html(self, url):
         request = urllib2.urlopen(url, context=ssl._create_unverified_context())

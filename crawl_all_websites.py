@@ -3,7 +3,7 @@ from autotrader import AutoTraderCrawler
 import json
 
 location = "N33JB"
-search_radius = 3
+search_radius = 10
 filename = "cars.json"
 
 crawlers = [
