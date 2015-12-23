@@ -46,22 +46,25 @@ class AutoTraderCrawler(Crawler):
         search_results = soup.findAll("div", {"class": "search-result__r1"})
 
         for search_result in search_results:
+            #TODO: Also include featured ads
+            if search_result.find("div", {"class": "featured-dealer__dealer-info"}):
+                continue
+
             url = search_result.find("div", {"class": "search-results__thumbnail-col"}).find('a')['href']
 
             car_attributes = search_result.find("ul", {"class": "search-result__attributes"}).findAll("li")
+
+            #I don't want to buy a car from someone who does not document its specs
+            if len(car_attributes) < 6:
+                continue
 
             #TODO: don't ignore this written-off warning!
             cat_d_warning_message = "At some point this vehicle was damaged and written off by the insurer because it was uneconomical to repair."
             if cat_d_warning_message in car_attributes[0].text:
                 car_attributes.pop(0)
 
-            print "----------"
-            print car_attributes[0].text
-            print "----------"
+            year = int(re.search(r"(\d+).+", car_attributes[0].text).group(1))
 
-
-
-            year = int(re.search(r"(\d+) \(.+", car_attributes[0].text).group(1))
             car_type = car_attributes[1].text
             mileage = int(re.search(r"((?:\d+)?,?\d+)", car_attributes[2].text).group(1).replace(',',''))
             transmission = car_attributes[3].text

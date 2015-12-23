@@ -10,9 +10,13 @@ from car import Car
 class GumtreeCrawler(Crawler):
     host_url = "https://www.gumtree.com/"
 
-    def crawl(self, location, search_radius):
+    def __init__(self, location, search_radius):
+        self.location = location
+        self.search_radius = search_radius
+
+    def crawl(self):
         #TODO: maybe use the simpler url pattern used to get the rest of the links
-        search_page_url = self.host_url + "search?q=&search_category=cars&search_location=" + str(location) + "&tl=&distance=" + str(search_radius)
+        search_page_url = self.host_url + "search?q=&search_category=cars&search_location=" + str(self.location) + "&tl=&distance=" + str(self.search_radius)
 
         search_page_html = self.get_html(search_page_url)
 
@@ -24,15 +28,15 @@ class GumtreeCrawler(Crawler):
 
         #get the number of pages
         total_page_number_element = soup.find("li", {"class": "page-last hide-fully-to-l"})
-        number_of_pages = int(total_page_number_element.text)
+        number_of_pages = int(re.search(r"((?:\d+)?,?\d+)", total_page_number_element.text).group(1).replace(',',''))
 
         #Get the rest of the links
         for i in range(number_of_pages - 1):
             current_page = i+2
 
-            print "Crawling page " + str(current_page) + " of " + str(number_of_pages) 
+            print "Gumtree page " + str(current_page) + " of " + str(number_of_pages) 
 
-            url = self.host_url + "cars/" + location + "/page" + str(current_page) + "?distance=" + str(search_radius)
+            url = self.host_url + "cars/" + self.location + "/page" + str(current_page) + "?distance=" + str(self.search_radius)
 
             html = self.get_html(url)
             soup = BeautifulSoup(html, 'html.parser')
@@ -87,5 +91,4 @@ if __name__ == "__main__":
 
     cars = GumtreeCrawler().crawl(location, search_radius)
 
-    with open('GumtreeCars.json', 'w') as outfile:
-        json.dump([car.__dict__ for car in cars], outfile, indent=4)
+    print cars
