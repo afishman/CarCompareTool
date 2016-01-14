@@ -69,7 +69,12 @@ class AutoTraderCrawler(Crawler):
                 continue
 
             car_type = car_attributes[1].text
-            mileage = int(re.search(r"((?:\d+)?,?\d+)", car_attributes[2].text).group(1).replace(',',''))
+
+            mileage_regex = re.search(r"((?:\d+)?,?\d+)", car_attributes[2].text)
+            if not mileage_regex:
+                continue
+            mileage = int(mileage_regex.group(1).replace(',',''))
+            
             transmission = car_attributes[3].text
 
             engine_size = car_attributes[4].text

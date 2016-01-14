@@ -2,8 +2,8 @@ from gumtree import GumtreeCrawler
 from autotrader import AutoTraderCrawler
 import json
 
-location = "N33JB"
-search_radius = 10
+location = "BS28EZ"
+search_radius = 50
 filename = "cars.json"
 
 crawlers = [

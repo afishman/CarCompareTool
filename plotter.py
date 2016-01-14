@@ -6,13 +6,15 @@ import matplotlib.pyplot as plt
 
 from car import Car
 
-search_terms = ["accord"]
+search_terms = ["fiesta"]
+
 filename = "cars.json"
 
 def onclick(event, cars):
     #Find the car closest (xdata, ydata)
     mileage = np.array([car.mileage for car in cars])
     price = np.array([car.price for car in cars])
+
 
     distances = np.sqrt((mileage - event.xdata)**2 + (price - event.ydata)**2)
 
@@ -27,6 +29,7 @@ def onclick(event, cars):
     print "Year: " + str(closest_car.year)
     print "Price: " + str(closest_car.price)
 
+# for searching for a particular car in titles
 def search(terms, string):
     if len(terms) == 0:
         return True
@@ -40,6 +43,7 @@ def search(terms, string):
     return False
 
 if __name__ == "__main__":
+
     parsed_json = json.loads(open(filename, 'r').read())
 
     cars=[]
@@ -54,18 +58,18 @@ if __name__ == "__main__":
             price=car['price']))
 
     filtered_cars = filter(lambda x: search(search_terms, x.title), cars)
-    
-    cars_found_message = str(len(filtered_cars)) + " cars found (" + str(len(cars)) + " total)"
-    
+        
     fig = plt.figure()
     
     ax = fig.add_subplot(111)
     ax.scatter([car.mileage for car in filtered_cars], [car.price for car in filtered_cars])
     ax.grid()
     
-    ax.set_xlabel('Mileage')
-    ax.set_ylabel('Price')
+    ax.set_xlabel('Year')
+    ax.set_ylabel('Mileage')
+
     search_terms_message = 'Search Terms: ' + ', '.join(search_terms)
+    cars_found_message = str(len(filtered_cars)) + " cars found (" + str(len(cars)) + " total)"
     ax.set_title(search_terms_message + ' | ' + cars_found_message)
 
     cid = fig.canvas.mpl_connect('button_release_event', lambda x: onclick(x, filtered_cars))
