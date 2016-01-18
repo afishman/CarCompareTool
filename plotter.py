@@ -1,18 +1,19 @@
 import json
 import webbrowser
+import sys
 
 import numpy as np
 import matplotlib.pyplot as plt
 
 from car import Car
 
-search_terms = ["fiesta"]
 
 filename = "cars.json"
 
 def onclick(event, cars):
     #Find the car closest (xdata, ydata)
-    mileage = np.array([car.mileage for car in cars])
+    # TODO: Make this better to switch between axes
+    mileage = np.array([car.year for car in cars])
     price = np.array([car.price for car in cars])
 
 
@@ -42,7 +43,7 @@ def search(terms, string):
 
     return False
 
-if __name__ == "__main__":
+def main(search_terms):
 
     parsed_json = json.loads(open(filename, 'r').read())
 
@@ -62,11 +63,11 @@ if __name__ == "__main__":
     fig = plt.figure()
     
     ax = fig.add_subplot(111)
-    ax.scatter([car.mileage for car in filtered_cars], [car.price for car in filtered_cars])
+    ax.scatter([car.year for car in filtered_cars], [car.price for car in filtered_cars])
     ax.grid()
     
     ax.set_xlabel('Year')
-    ax.set_ylabel('Mileage')
+    ax.set_ylabel('Price')
 
     search_terms_message = 'Search Terms: ' + ', '.join(search_terms)
     cars_found_message = str(len(filtered_cars)) + " cars found (" + str(len(cars)) + " total)"
@@ -75,3 +76,9 @@ if __name__ == "__main__":
     cid = fig.canvas.mpl_connect('button_release_event', lambda x: onclick(x, filtered_cars))
     
     plt.show()
+
+if __name__ == "__main__":
+    search_terms = sys.argv
+    search_terms.pop(0)
+    print search_terms
+    main(search_terms)
